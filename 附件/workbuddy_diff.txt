@@ -1,0 +1,37 @@
+# WorkBuddy 实验 diff（agent-lab-2）
+
+git diff 输出（与 Codex 侧完全一致）：
+
+diff --git a/greet.py b/greet.py
+index 05a1e4e..f96fd15 100644
+--- a/greet.py
++++ b/greet.py
+@@ -1,4 +1,6 @@
+ def greet(name: str) -> str:
++    if not name.strip():
++        raise ValueError("姓名不能为空白")
+     return f"Hello, {name}!"
+ 
+ 
+diff --git a/test_greet.py b/test_greet.py
+index 359b6bf..64bc53a 100644
+--- a/test_greet.py
++++ b/test_greet.py
+@@ -7,6 +7,10 @@ class GreetTests(unittest.TestCase):
+     def test_name(self) -> None:
+         self.assertEqual(greet("Lin"), "Hello, Lin!")
+ 
++    def test_blank_raises(self) -> None:
++        with self.assertRaises(ValueError):
++            greet("   ")
++
+ 
+ if __name__ == "__main__":
+     unittest.main()
+
+python -m unittest -v 输出：
+test_blank_raises (test_greet.GreetTests.test_blank_raises) ... ok
+test_name (test_greet.GreetTests.test_name) ... ok
+
+Ran 2 tests in 0.000s
+OK
