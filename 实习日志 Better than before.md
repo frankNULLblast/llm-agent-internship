@@ -31,9 +31,12 @@
 
 ## 实验二：Codex（agent-lab）
 
-同一提示词发往 Codex。实际情况：本机 `OPENAI_API_KEY` 为空，Codex CLI 连接 api.openai.com 返回 401 Unauthorized，没法真正跑起来。实习全程用的是 DeepSeek，没有 OpenAI 凭据，这是环境限制，不是代码问题（详见 [[知识点/Codex 被 401 阻断]]）。
+同一提示词发往 Codex。实际情况：Codex 在本机没法自己跑起来，是两层限制叠加（详见 [[知识点/Codex 被 401 阻断]]）：
 
-为了把对比做完，我按 Codex 文档化的工作流纪律（先计划 → 审批 → 改动 → 验证）由操作员代执行同一改动，`agent-lab` 得到与 `agent-lab-2` 完全相同的 diff 与测试结果。
+- 先试 `codex login --device-auth`：需要 OpenAI 账号，但本机环境注册/登录要求海外手机号、连 Google 登录也被地区/IP 拦截，OAuth 完不成。
+- 再试把 Codex 后端换成 DeepSeek：本机 `DEEPSEEK_API_KEY` 已在环境变量里，但实测即使把 `provider.openai.base_url` 指到 `https://api.deepseek.com/v1`，Codex 仍连 `api.openai.com`（自定义 `base_url` 被忽略）；更根本的是 Codex 依赖 OpenAI 的 **Responses API**（`/v1/responses`），DeepSeek 只提供 Chat Completions API，没有该端点，所以后端换不成。
+
+这是环境限制，不是代码问题。为了把对比做完，我按 Codex 文档化的工作流纪律（先计划 → 审批 → 改动 → 验证）由操作员代执行同一改动，`agent-lab` 得到与 `agent-lab-2` 完全相同的 diff 与测试结果。
 
 ## 工具对比
 
