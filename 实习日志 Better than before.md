@@ -50,4 +50,163 @@
 
 ## 成果附件
 
-- 终端启动日志截图、curl `/health` 输出、pytest 输出、浏览器 `/docs` 页面（见 `附件/`）
+
+![[e38762021f054d34a15d5b5711ec0ada.png]]
+![[df4388a9daba0fe520dbbd947c8ce94f.png]]
+![[5e0fc15e4cc85cd46502104f951634f3.png]]
+![[5a2c57483fec704975ec7f44c008241f.png]]
+![[4cd7af895a85463da7e6a2b8dd448062.png]]
+ HTTP 与 ASGI 数据流
+
+一句话
+
+客户端发 HTTP 请求，Uvicorn 负责监听端口并把请求交给 FastAPI 的路由函数，函数返回值再由 Uvicorn 包成 HTTP 响应送回客户端。
+
+关键名词
+
+| 名词 | 本日含义 | 本项目示例 |
+|---|---|---|
+| 客户端 | 发出 HTTP 请求的程序 | 浏览器、`curl`、TestClient |
+| 服务端 | 接收请求并返回响应的程序 | FastAPI 应用 |
+| 方法 | 请求意图 | `GET` 读取、`POST` 提交数据 |
+| 路径 | URL 里定位接口的部分 | `/health` |
+| 状态码 | 请求处理结果 | `200` 成功、`422` 请求不符合 Schema |
+| ASGI | Python Web 应用与服务器的接口规范 | FastAPI 应用交给 Uvicorn 运行 |
+| Uvicorn | 加载 ASGI 应用并监听端口的服务器 | `fastapi dev` 内部使用它 |
+ 一次请求的最小过程
+
+```
+客户端 → 127.0.0.1:8000 → Uvicorn → FastAPI 路由函数
+客户端 ← 状态码 + JSON ← Uvicorn ← 路由函数返回值
+```
+
+- `127.0.0.1` 只指向**当前这台电脑**（本机回环），外网访问不到，开发安全。
+- `8000` 是端口，用来区分同一台电脑上的不同网络程序。
+- `main:app` 里 `main` 是文件名 `main.py`，`app` 是文件里的 `app = FastAPI(...)` 对象。
+
+为什么是 `async def` 还是 `def`
+
+本日 `health()` 用普通 `def`，因为它只在内存里构造一个小对象、没有 `await` 的异步操作。不要为了"看着现代"机械改成 `async def`。
+
+关联
+
+- [[../Day1 知识库|Day1 知识库]]
+- [[TestClient 为什么不需要真实端口]]
+Pydantic 响应模型与 strict
+
+今天用到的响应模型
+
+```python
+class HealthResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    status: Literal["ok"]
+    version: str
+```
+
+`@app.get("/health", response_model=HealthResponse)` 让 FastAPI 在返回前**用这个模型校验并序列化**返回值。
+
+两个配置的含义
+
+- `strict=True`：**严格类型**。比如 `version` 必须是 `str`，你返回个数字 `0.1.0`（实际是字符串）没问题，但如果你返回 `int` 或类型不符，Pydantic 直接报错而不是默默转换。它逼你类型对齐。
+- `extra="forbid"`：**禁止多余字段**。返回体里多一个字段就报错。防止"顺手多塞数据"导致接口契约漂移。
+
+为什么 Day 5/6 也用 Pydantic
+
+Day 5 的 `extract` 返回用 Pydantic 字段校验（score 是 `int` 还是 `None`）。Day 1 的 `HealthResponse` 是同一个思路：**模型既是文档（自动进 OpenAPI），又是运行时校验器**。
+
+与"人类复核"的联系
+
+Day 5 的核心是"模型抽、程序核、人拍板"。FastAPI 这里把"程序核"提前到**接口层**：连返回字段的形状都不对，根本出不了门（`extra="forbid"` 直接 422/500）。这是把校验前移的工程习惯。
+
+关联
+
+- [[../Day1 知识库|Day1 知识库]]
+- [[Swagger 与 OpenAPI 自动文档]]
+
+ Swagger 与 OpenAPI 自动文档
+
+两个自动端点
+
+| 路径 | 是什么 | 谁用 |
+|---|---|---|
+| `GET /docs` | Swagger UI，浏览器里可点的交互文档 | 人（开发、联调） |
+| `GET /openapi.json` | OpenAPI 契约（机器可读 JSON） | 代码生成、测试、第三方对接 |
+
+FastAPI 根据你写的路由、Pydantic 模型**自动生成**这两样，不用手写文档。
+
+改元数据它们会跟着变
+
+`FastAPI(...)` 构造时的参数会写进 `info` 对象：
+
+```python
+app = FastAPI(
+    title="专利业务教学 API",
+    summary="专利业务教学 API 的最小可用版本，仅用于实习演示。",
+    version="0.1.0",
+    description="只处理虚构教学数据……",
+    contact={"name": "实习教学助手", "email": "student@example.com"},
+)
+```
+
+挑战任务加上 `summary` 和 `contact` 后，重新看 `/openapi.json` 的 `info`：
+
+```json
+{
+  "title": "专利业务教学 API",
+  "summary": "专利业务教学 API 的最小可用版本，仅用于实习演示。",
+  "version": "0.1.0",
+  "contact": {"name": "实习教学助手", "email": "student@example.com"}
+}
+```
+
+`/docs` 页面顶部也会显示这些文字。
+
+安全提醒（Day 5 学的延续）
+
+Swagger UI 只用于**本机教学**。生产环境不该把接口文档公开给外人——和"Key 只走环境变量、不进 Git"是同一类纪律。
+
+关联
+
+- [[../Day1 知识库|Day1 知识库]]
+- [[Pydantic 响应模型与 strict]]
+TestClient 为什么不需要真实端口
+
+现象
+
+```python
+from fastapi.testclient import TestClient
+from main import app
+
+client = TestClient(app)
+
+def test_health_returns_version():
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "version": "0.1.0"}
+```
+
+运行 `pytest` 时**没有先启动 `fastapi dev`**，但测试照样通过。为什么？
+
+原因
+
+`TestClient` 在**当前 Python 进程内**直接调用 FastAPI 应用对象（`app`），绕过网络栈：
+
+```
+普通访问：客户端 → 网络(127.0.0.1:8000) → Uvicorn → app
+TestClient： 测试代码 → app（同一进程，无端口、无 socket）
+```
+
+它底层用 `httpx2` 直接把请求交给 ASGI app，所以：
+- 不需要监听 8000 端口（不会和正在跑的 dev 服务抢端口）；
+- 不访问互联网；
+- 启动快、可并行、CI 里稳定。
+
+什么时候才需要真端口
+
+只有"手动验证"或"端到端联调"时才启动 `fastapi dev` / `uvicorn` 然后用浏览器/`curl` 打。自动化测试一律用 TestClient。
+
+关联
+
+- [[../Day1 知识库|Day1 知识库]]
+- [[HTTP 与 ASGI 数据流]]
