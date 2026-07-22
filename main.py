@@ -1,10 +1,12 @@
+from collections.abc import Callable
 from typing import Literal
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, ConfigDict
+from fastapi import Depends, FastAPI, HTTPException
+from openai import APIError
+from pydantic import BaseModel, ConfigDict, Field
 
 from fee_calc import calculate
-from patent_bill import build_result
+from patent_bill import build_result, extract
 
 
 APP_VERSION = "0.1.0"
@@ -57,6 +59,17 @@ class ReviewResult(StrictModel):
     review_reasons: list[str]
 
 
+class OCRTextRequest(StrictModel):
+    ocr_text: str = Field(min_length=1, max_length=8000)
+
+
+Extractor = Callable[[str], dict]
+
+
+def get_extractor() -> Extractor:
+    return extract
+
+
 @app.get("/health", response_model=HealthResponse, tags=["system"])
 def health() -> HealthResponse:
     return HealthResponse(status="ok", version=APP_VERSION)
@@ -85,4 +98,24 @@ def review_patent_bill(record: PatentBillRecord) -> ReviewResult:
         result = build_result(record.model_dump())
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return ReviewResult.model_validate(result)
+
+
+@app.post(
+    "/api/v1/patent-bills/recognize",
+    response_model=ReviewResult,
+    tags=["patent bills"],
+)
+def recognize_patent_bill(
+    request: OCRTextRequest,
+    extractor: Extractor = Depends(get_extractor),
+) -> ReviewResult:
+    try:
+        result = build_result(extractor(request.ocr_text))
+    except RuntimeError as exc:
+        if "DEEPSEEK_API_KEY" in str(exc):
+            raise HTTPException(status_code=503, detail="模型服务未配置") from exc
+        raise HTTPException(status_code=502, detail="模型服务调用失败") from exc
+    except (APIError, ValueError) as exc:
+        raise HTTPException(status_code=502, detail="模型服务调用失败") from exc
     return ReviewResult.model_validate(result)

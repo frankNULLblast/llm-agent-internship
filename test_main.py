@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from main import app
+from main import app, get_extractor
 
 
 client = TestClient(app)
@@ -156,3 +156,55 @@ def test_extra_bill_field_is_422() -> None:
     response = client.post("/api/v1/patent-bills/review", json=record)
 
     assert response.status_code == 422
+
+
+def test_recognize_uses_fake_extractor() -> None:
+    def fake_extract(text: str) -> dict:
+        assert "虚构" in text
+        return VALID_BILL.copy()
+
+    app.dependency_overrides[get_extractor] = lambda: fake_extract
+    try:
+        response = client.post(
+            "/api/v1/patent-bills/recognize",
+            json={"ocr_text": "虚构 OCR 文本"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["route"] == "standard_manual_review"
+
+
+def test_recognize_without_model_config_is_503() -> None:
+    def missing_config(text: str) -> dict:
+        raise RuntimeError("未设置 DEEPSEEK_API_KEY")
+
+    app.dependency_overrides[get_extractor] = lambda: missing_config
+    try:
+        response = client.post(
+            "/api/v1/patent-bills/recognize",
+            json={"ocr_text": "虚构 OCR 文本"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 503
+    assert response.json() == {"detail": "模型服务未配置"}
+
+
+def test_recognize_bad_model_output_is_502() -> None:
+    def bad_output(text: str) -> dict:
+        return {"unexpected": "data"}
+
+    app.dependency_overrides[get_extractor] = lambda: bad_output
+    try:
+        response = client.post(
+            "/api/v1/patent-bills/recognize",
+            json={"ocr_text": "虚构 OCR 文本"},
+        )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 502
+    assert response.json() == {"detail": "模型服务调用失败"}
