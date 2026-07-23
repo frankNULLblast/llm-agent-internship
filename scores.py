@@ -9,7 +9,7 @@ def average(values):
 
 
 def load_scores(path):
-    data = json.loads(Path(path).read_text(encoding="ascii"))
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
     return [row["score"] for row in data]
 
 
