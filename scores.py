@@ -14,6 +14,6 @@ def load_scores(path):
 
 
 def grade(score):
-    if score > 60:
+    if score >= 60:
         return "pass"
     return "fail"
