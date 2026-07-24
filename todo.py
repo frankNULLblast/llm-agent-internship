@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -29,7 +30,9 @@ def load() -> list[dict]:
 
 
 def save(items: list[dict]) -> None:
-    DATA_FILE.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    tmp = DATA_FILE.with_suffix(".tmp")
+    tmp.write_text(json.dumps(items, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.replace(tmp, DATA_FILE)
 
 
 def next_id(items: list[dict]) -> int:
@@ -91,7 +94,7 @@ def run(argv: list[str] | None = None) -> int:
             save(items)
             print(f"已清除 {len(removed)} 个已完成事项")
         return 0
-    except (OSError, json.JSONDecodeError, ValueError) as exc:
+    except (OSError, json.JSONDecodeError, ValueError, KeyError) as exc:
         print(f"错误：{exc}", file=sys.stderr)
         return 1
 
