@@ -81,7 +81,8 @@ def render_md(summary: dict, rows: list) -> str:
 
 
 def main() -> int:
-    questions = json.loads(QUESTIONS.read_text(encoding="utf-8"))
+    qpath = Path(sys.argv[1]) if len(sys.argv) > 1 else QUESTIONS
+    questions = json.loads(qpath.read_text(encoding="utf-8"))
     rows = []
     for item in questions:
         q = item["question"]
