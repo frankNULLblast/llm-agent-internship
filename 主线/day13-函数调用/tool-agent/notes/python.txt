@@ -1,0 +1,1 @@
+Python 的异常处理使用 try、except、finally。

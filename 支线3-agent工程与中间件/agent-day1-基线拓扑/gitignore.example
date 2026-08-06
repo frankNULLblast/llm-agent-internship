@@ -1,0 +1,10 @@
+# Day 1 要求 patent-agent-service/.gitignore 至少包含以下条目。
+# 本文件在整理仓库中改名为 gitignore.example，避免作为真实 .gitignore 影响 Git 行为。
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+evidence/
+backups/

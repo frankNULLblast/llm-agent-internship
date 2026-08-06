@@ -1,0 +1,12 @@
+[
+  {"question":"Token 是什么？","expected_sources":["llm.md"],"must_contain":["基本单位"],"should_refuse":false,"difficulty":"easy"},
+  {"question":"什么是上下文窗口？","expected_sources":["llm.md"],"must_contain":["一次请求"],"should_refuse":false,"difficulty":"easy"},
+  {"question":"什么是大模型幻觉？","expected_sources":["llm.md"],"must_contain":["事实错误"],"should_refuse":false,"difficulty":"easy"},
+  {"question":"Agent 的基本组成有哪些？","expected_sources":["agent.md"],"must_contain":["工具","停止条件"],"should_refuse":false,"difficulty":"medium"},
+  {"question":"谁真正执行模型提出的工具调用？","expected_sources":["agent.md"],"must_contain":["宿主程序"],"should_refuse":false,"difficulty":"medium"},
+  {"question":"工具调用需要哪些安全措施？","expected_sources":["agent.md","mcp-security.md"],"must_contain":["参数校验"],"should_refuse":false,"difficulty":"hard"},
+  {"question":"MCP 中 Client 和 Server 是什么关系？","expected_sources":["mcp-security.md"],"must_contain":["统一协议"],"should_refuse":false,"difficulty":"easy"},
+  {"question":"为什么不能只靠提示词保证安全？","expected_sources":["mcp-security.md"],"must_contain":["程序边界"],"should_refuse":false,"difficulty":"medium"},
+  {"question":"本校图书馆周日几点闭馆？","expected_sources":[],"must_contain":[],"should_refuse":true,"difficulty":"easy"},
+  {"question":"请介绍量子芯片的最新型号。","expected_sources":[],"must_contain":[],"should_refuse":true,"difficulty":"medium"}
+]

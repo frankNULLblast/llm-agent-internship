@@ -1,0 +1,39 @@
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+== k3s version ==
+k3s version v1.36.2+k3s1 (01b6f04a)
+go version go1.26.4
+== node ==
+NAME        STATUS   ROLES           AGE   VERSION        INTERNAL-IP       EXTERNAL-IP   OS-IMAGE         KERNEL-VERSION                     CONTAINER-RUNTIME
+linux-lab   Ready    control-plane   16m   v1.36.2+k3s1   192.168.172.100   <none>        Anolis OS 8.10   5.10.134-19.8.an8.x86_64 (amd64)   containerd://2.3.2-k3s2
+== workload ==
+NAME                            READY   UP-TO-DATE   AVAILABLE   AGE     CONTAINERS   IMAGES                        SELECTOR
+deployment.apps/linux-lab-web   2/2     2            2           2m29s   web          localhost/linux-lab-web:0.1   app.kubernetes.io/name=linux-lab-web
+
+NAME                                 READY   STATUS    RESTARTS   AGE     IP           NODE        NOMINATED NODE   READINESS GATES
+pod/linux-lab-web-786c76b499-bsr8d   1/1     Running   0          94s     10.42.0.12   linux-lab   <none>           <none>
+pod/linux-lab-web-786c76b499-t4bmr   1/1     Running   0          2m29s   10.42.0.9    linux-lab   <none>           <none>
+
+NAME                    TYPE       CLUSTER-IP    EXTERNAL-IP   PORT(S)        AGE     SELECTOR
+service/linux-lab-web   NodePort   10.43.7.149   <none>        80:30080/TCP   2m29s   app.kubernetes.io/name=linux-lab-web
+== image ==
+localhost/linux-lab-web:0.1
+== rollout history ==
+deployment.apps/linux-lab-web 
+REVISION  CHANGE-CAUSE
+2         <none>
+3         <none>
+
+== security ==
+Enforcing
+active
+k3s-selinux-1.6-1.el8.noarch
+== cgroup ==
+cgroup2fs
+BOOT_IMAGE=(hd0,msdos1)/vmlinuz-5.10.134-19.8.an8.x86_64 root=/dev/mapper/ao_linux--lab-root ro resume=/dev/mapper/ao_linux--lab-swap rd.lvm.lv=ao_linux-lab/root rd.lvm.lv=ao_linux-lab/swap rhgb quiet cgroup.memory=nokmem crashkernel=0M-2G:0M,2G-8G:192M,8G-128G:256M,128G-376G:384M,376G-:448M kfence.sample_interval=100 kfence.booting_max=0-2G:0,2G-32G:2M,32G-:32M preempt=none systemd.unified_cgroup_hierarchy=1
+== firewalld trusted ==
+10.42.0.0/16 10.43.0.0/16
+yes
+== NodePort test ==
+      <h1>Linux Lab Web 0.1</h1>

@@ -1,0 +1,15 @@
+{
+  "record": {
+    "document_type": "电子发票",
+    "patent_application_number": "CN202410123456.7",
+    "invoice_number": "24503100000123456789",
+    "issue_date": "2026-07-10",
+    "payer": "示例智能科技有限公司",
+    "payee": "示例知识产权服务有限公司",
+    "service_item": "发明专利申请代理服务费",
+    "amount_yuan": 3500.0,
+    "confidence": 1.0
+  },
+  "route": "standard_manual_review",
+  "review_reasons": []
+}

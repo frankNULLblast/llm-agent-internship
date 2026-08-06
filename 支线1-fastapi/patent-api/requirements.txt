@@ -1,0 +1,4 @@
+fastapi[standard-no-fastapi-cloud-cli]==0.139.0
+httpx2==2.5.0
+openai==2.45.0
+pytest==9.1.1

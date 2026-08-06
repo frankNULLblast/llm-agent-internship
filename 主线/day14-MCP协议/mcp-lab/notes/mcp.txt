@@ -1,0 +1,3 @@
+MCP 让 Client 用统一协议发现并调用 Server 提供的工具。
+Server 可以暴露 Tool（可调用函数）、Resource（只读数据）和 Prompt（预设模板）。
+STDIO 传输用标准输入输出传协议消息，Server 不能向 stdout 随意 print。

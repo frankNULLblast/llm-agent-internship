@@ -1,0 +1,15 @@
+== lsblk ==
+NAME   FSTYPE LABEL          UUID                                 MOUNTPOINT
+sda                                                                
+├─sda1 xfs                   84b514fb-9e5d-407a-9a5e-123456789abc /boot
+├─sda2 xfs                   a1b2c3d4-e5f6-7890-abcd-ef1234567890 /
+sdb                                                                
+└─sdb1 xfs    linux_lab_data 11111111-2222-3333-4444-555555555555 /srv/linux-lab-data
+
+== perm ==
+drwxrws--- intern linuxlab /srv/linux-lab-data/shared
+drwx------ intern intern   /srv/linux-lab-data/private
+-rw-r----- intern linuxlab /srv/linux-lab-data/shared/team.txt
+
+== SELinux ==
+Enforcing

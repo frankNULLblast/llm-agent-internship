@@ -1,0 +1,17 @@
+[
+  {
+    "patent_application_number": "CN202410123456.7",
+    "fee_type": "代理服务费",
+    "amount_yuan": "3500.00"
+  },
+  {
+    "patent_application_number": "CN202410123456.7",
+    "fee_type": "年费",
+    "amount_yuan": "900.50"
+  },
+  {
+    "patent_application_number": "CN202410123457.5",
+    "fee_type": "代理服务费",
+    "amount_yuan": "1200"
+  }
+]
