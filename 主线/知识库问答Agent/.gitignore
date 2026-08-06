@@ -4,3 +4,4 @@ __pycache__/
 .env
 eval_results.json
 agent.log
+model_compare.json
